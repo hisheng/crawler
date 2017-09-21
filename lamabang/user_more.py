@@ -1,6 +1,7 @@
 import sys,requests,pymysql.cursors
 from db import Db
 from uids import Uids
+import time
 
 
 
@@ -141,6 +142,18 @@ def offUserMore(id):
     except:
         return 0
 
+def setUserMoreStart(id,start):
+    db = Db()
+    dbconnection = db.getConnection()
+    try:
+        with dbconnection.cursor() as cursor:
+            # Read a single record
+            sql = "UPDATE `user_more`  SET `start`  = %s WHERE  `id` = %s"
+            cursor.execute(sql, (start, id))
+            connection.commit()
+    except:
+        return 0
+
 def getLamabangUserMoreUrl(uid):
     url = "http://www.lamabang.com/user-more/u-"+ uid +"-tab-3.html?page="
     return  url
@@ -150,11 +163,13 @@ while getUserMore() :
     id = r['id']
     uid = r['uid']
     num = r['page_num']
-    i = 1
+    i = r['start']
     while i <= num:
         page = getLamabangUserMoreUrl(uid) + str(i)
         print(page)
+        time.sleep(4)
         crawlerUrl(page)
+        setUserMoreStart(id,i)
         i = i+1
     offUserMore(id)
 
