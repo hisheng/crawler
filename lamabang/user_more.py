@@ -1,4 +1,5 @@
 import sys,requests,pymysql.cursors
+from db import Db
 from uids import Uids
 
 
@@ -12,12 +13,7 @@ connection = pymysql.connect(host='localhost',
 
 
 
-if len(sys.argv ) > 1 :
-    url = sys.argv[1:]
-else:
-    url = 'http://www.lamabang.com/user-more/u-6A73765E68736E16694D7E1A-tab-3.html'
 
-bodyString = requests.get(url)
 
 
 def getUid(url):
@@ -95,17 +91,74 @@ def isUserMore(url):
 def maxUserMorePage(url):
     return 1
 
-index = 0
-s = bodyString.text[index:]
 
-while True :
-    url,index = getUrl(s)
-    if url :
-        s = s[index:]
-    else:
-        break
-    print (url,index)
-    if isUserMore(url) > 0:
-        print (url, index)
+
+# 爬虫 爬某个url
+def crawlerUrl(url):
+    bodyString = requests.get(url)
+    index = 0
+    s = bodyString.text[index:]
+
+    while True:
+        url, index = getUrl(s)
+        if url:
+            s = s[index:]
+        else:
+            break
+        print(url, index)
+        if isUserMore(url) > 0:
+            print(url, index)
+
+
+if len(sys.argv ) > 1 :
+    url = sys.argv[1:]
+else:
+    url = 'http://www.lamabang.com/user-more/u-6A73765E68736E16694D7E1A-tab-3.html'
+
+
+def getUserMore():
+    db = Db()
+    dbconnection = db.getConnection()
+    try:
+        with dbconnection.cursor() as cursor:
+            # Read a single record
+            sql = "SELECT `*` FROM `user_more` where  `status` = 1 limit 1"
+            cursor.execute(sql)
+            result = cursor.fetchone()
+            return result
+    except:
+        return 0
+
+def offUserMore(id):
+    db = Db()
+    dbconnection = db.getConnection()
+    try:
+        with dbconnection.cursor() as cursor:
+            # Read a single record
+            sql = "UPDATE `user_more`  SET `status`  = %s WHERE  `id` = %s"
+            cursor.execute(sql, ('0',id))
+            connection.commit()
+    except:
+        return 0
+
+def getLamabangUserMoreUrl(uid):
+    url = "http://www.lamabang.com/user-more/u-"+ uid +"-tab-3.html?page="
+    return  url
+
+while getUserMore() :
+    r = getUserMore()
+    id = r['id']
+    uid = r['uid']
+    num = r['page_num']
+    i = 1
+    while i <= num:
+        page = getLamabangUserMoreUrl(uid) + str(i)
+        print(page)
+        crawlerUrl(page)
+        i = i+1
+    offUserMore(id)
+
+
+
 
 

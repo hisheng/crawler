@@ -2,6 +2,7 @@ import sys
 from db import Db
 
 class Uids:
+
     def addUid(self, uid):
         d = Db()
         connection = d.getConnection()
