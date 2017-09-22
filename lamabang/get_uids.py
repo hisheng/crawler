@@ -167,7 +167,7 @@ while getUserMore() :
     while i <= num:
         page = getLamabangUserMoreUrl(uid) + str(i)
         print(page)
-        time.sleep(4)
+        time.sleep(6)
         crawlerUrl(page)
         setUserMoreStart(id,i)
         i = i+1
